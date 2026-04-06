@@ -1,41 +1,44 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.os890.test.async.cdi;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.os890.async.cdi.api.Async;
-import org.os890.async.cdi.impl.AsyncInterceptor;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.os890.cdi.addon.dynamictestbean.EnableTestBeans;
 
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
+
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@RunWith(Arquillian.class)
-public class AsyncTest
+/**
+ * Tests for the {@code @Async} CDI interceptor verifying asynchronous
+ * execution of void methods, Future-returning methods, and CDI events.
+ */
+@EnableTestBeans
+class AsyncTest
 {
-    @Deployment
-    public static WebArchive createTestArchive()
-    {
-        Asset beansXml = new StringAsset("<beans><interceptors><class>org.os890.async.cdi.impl.AsyncInterceptor</class></interceptors></beans>");
-        return ShrinkWrap.create(WebArchive.class, "async-cdi-test.war")
-                .addAsWebInfResource(beansXml, "beans.xml")
-                .addPackage(AsyncTestEvent.class.getPackage())
-
-                .addAsLibraries(ShrinkWrap.create(JavaArchive.class, "async-cdi-lib.jar")
-                        .addPackages(true, Async.class.getPackage())
-                        .addPackages(true, AsyncInterceptor.class.getPackage()));
-    }
-
     @Inject
     private TestService1 testService1;
 
@@ -49,7 +52,7 @@ public class AsyncTest
     private Event<AsyncTestEvent> asyncEvent;
 
     @Test
-    public void testAsyncService1()
+    void testAsyncService1()
     {
         assertNotNull(testService1);
 
@@ -70,7 +73,7 @@ public class AsyncTest
     }
 
     @Test
-    public void testAsyncService2()
+    void testAsyncService2()
     {
         assertNotNull(testService2);
 
@@ -91,9 +94,11 @@ public class AsyncTest
     }
 
     @Test
-    @Ignore //works with owb 1.2+ and versions of tomee which are based on it
-    //owb 1.1.x uses Method#isAccessible instead of Modifier.isPublic(method.getModifiers()) to check if the (interceptor-)proxy should be used
-    public void testAsyncEvent()
+    @Disabled("works with owb 1.2+ and versions of tomee which are based on it"
+            + " - owb 1.1.x uses Method#isAccessible instead of"
+            + " Modifier.isPublic(method.getModifiers()) to check if the"
+            + " (interceptor-)proxy should be used")
+    void testAsyncEvent()
     {
         assertNotNull(testObserver);
         assertNotNull(asyncEvent);
